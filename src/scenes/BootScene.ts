@@ -1,14 +1,20 @@
 import Phaser from "phaser";
+import { GameStateManager } from "../systems/GameStateManager";
 
 export class BootScene extends Phaser.Scene {
-  constructor() {
-    super("BootScene");
-  }
+    private gameStateManager: GameStateManager;
 
-  create() {
-    this.add.text(640, 360, "BATTLEFORGE", {
-      fontSize: "64px",
-      color: "#ffffff",
-    }).setOrigin(0.5);
-  }
+    constructor() {
+        super("BootScene");
+        this.gameStateManager = new GameStateManager();
+    }
+
+    create() {
+        this.gameStateManager.setPhase("menu");
+
+        this.add.text(640, 360, "BATTLEFORGE", {
+            fontSize: "64px",
+            color: "#ffffff",
+        }).setOrigin(0.5);
+    }
 }
