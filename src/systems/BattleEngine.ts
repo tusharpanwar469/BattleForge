@@ -1,8 +1,22 @@
+import type { BattleFactors } from "../core/BattleFactors";
 import type { BattleResult } from "../core/BattleResult";
 import type { GameState } from "../core/GameState";
 import type { TeamState } from "../core/TeamState";
+import {
+  DEFAULT_BATTLE_FACTOR_WEIGHTS,
+  type BattleFactorWeights
+} from "../config/BattleFactorWeights";
+import { calculateBattleScore } from "./BattleScoring";
 
 export class BattleEngine {
+  constructor(
+    private readonly weights: BattleFactorWeights = DEFAULT_BATTLE_FACTOR_WEIGHTS
+  ) {}
+
+  calculateScore(factors: BattleFactors): number {
+    return calculateBattleScore(factors, this.weights);
+  }
+
   resolveBattle(
     gameState: GameState,
     teamA: TeamState,

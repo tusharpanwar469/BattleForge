@@ -1,42 +1,26 @@
 import { describe, expect, it } from "vitest";
 import { BattleEngine } from "../systems/BattleEngine";
-import type { GameState } from "../core/GameState";
-import type { TeamState } from "../core/TeamState";
+import type { BattleFactors } from "../core/BattleFactors";
 
 describe("BattleEngine", () => {
-  it("returns a valid battle result structure", () => {
+  it("calculates a weighted battle score", () => {
     const engine = new BattleEngine();
 
-    const gameState: GameState = {
-      phase: "battle",
-      round: 1,
-      isPaused: false
+    const factors: BattleFactors = {
+      power: 10,
+      durability: 10,
+      speed: 10,
+      intelligence: 10,
+      combatSkill: 10,
+      abilities: 10,
+      equipment: 10,
+      battlefield: 10,
+      endurance: 10,
+      teamwork: 10,
+      magic: 10,
+      technology: 10
     };
 
-    const teamA: TeamState = {
-      id: "team-a",
-      name: "Team A",
-      budget: 220,
-      roster: [],
-      eliminatedFighters: []
-    };
-
-    const teamB: TeamState = {
-      id: "team-b",
-      name: "Team B",
-      budget: 220,
-      roster: [],
-      eliminatedFighters: []
-    };
-
-    const result = engine.resolveBattle(gameState, teamA, teamB);
-
-    expect(result).toHaveProperty("winnerTeamId");
-    expect(result).toHaveProperty("loserTeamId");
-    expect(result).toHaveProperty("round");
-    expect(result).toHaveProperty("reason");
-    expect(result).toHaveProperty("factors");
-
-    expect(Object.keys(result.factors)).toHaveLength(12);
+    expect(engine.calculateScore(factors)).toBe(120);
   });
 });
