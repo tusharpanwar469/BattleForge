@@ -5,6 +5,7 @@ import {
   GAME_BACKGROUND,
 } from "./config/gameConfig";
 import { BootScene } from "./scenes/BootScene";
+import { MenuScene } from "./scenes/MenuScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -12,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME_HEIGHT,
   parent: "game",
   backgroundColor: GAME_BACKGROUND,
-  scene: BootScene,
+  scene: [BootScene, MenuScene],
 };
 
 new Phaser.Game(config);

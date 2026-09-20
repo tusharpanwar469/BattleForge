@@ -10,11 +10,15 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
-        this.gameStateManager.setPhase("menu");
+    this.gameStateManager.setPhase("menu");
 
-        this.add.text(640, 360, "BATTLEFORGE", {
-            fontSize: "64px",
-            color: "#ffffff",
-        }).setOrigin(0.5);
-    }
+    this.add.text(640, 360, "BATTLEFORGE", {
+        fontSize: "64px",
+        color: "#ffffff",
+    }).setOrigin(0.5);
+
+    this.time.delayedCall(1500, () => {
+        this.scene.start("MenuScene");
+    });
+}
 }
