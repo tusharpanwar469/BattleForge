@@ -59,3 +59,34 @@ export function validateFighterDefinition(
     errors
   };
 }
+export function validateFighterDataset(
+  fighters: FighterDefinition[]
+): FighterValidationResult {
+  const errors: string[] = [];
+  const seenIds = new Set<string>();
+
+  for (const fighter of fighters) {
+    const result = validateFighterDefinition(fighter);
+
+    for (const error of result.errors) {
+      errors.push(`[${fighter.id || "unknown"}] ${error}`);
+    }
+
+    const normalizedId = fighter.id.trim().toLowerCase();
+
+    if (normalizedId) {
+      if (seenIds.has(normalizedId)) {
+        errors.push(`Duplicate fighter id: "${fighter.id}".`);
+      } else {
+        seenIds.add(normalizedId);
+      }
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+  

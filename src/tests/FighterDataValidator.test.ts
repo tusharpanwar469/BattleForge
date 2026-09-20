@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { FighterDefinition } from "../core/FighterDefinition";
-import { validateFighterDefinition } from "../systems/FighterDataValidator";
-
+import {
+  validateFighterDataset,
+  validateFighterDefinition
+} from "../systems/FighterDataValidator";
 const validFactors = {
   power: 10,
   durability: 10,
@@ -68,6 +70,27 @@ describe("validateFighterDefinition", () => {
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain(
       "Battle factor 'power' must be a finite number."
+    );
+  });
+});
+
+describe("validateFighterDataset", () => {
+  it("accepts a valid fighter dataset", () => {
+    const result = validateFighterDataset([validFighter]);
+
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  it("rejects duplicate fighter ids", () => {
+    const result = validateFighterDataset([
+      validFighter,
+      { ...validFighter }
+    ]);
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain(
+      'Duplicate fighter id: "fighter-001".'
     );
   });
 });
