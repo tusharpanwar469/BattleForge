@@ -17,7 +17,20 @@ export class BattleEngine {
       loserTeamId: "",
       round: 0,
       reason: "Battle resolution not implemented yet.",
-      factors: {}
+      factors: {
+        power: 0,
+        durability: 0,
+        speed: 0,
+        intelligence: 0,
+        combatSkill: 0,
+        abilities: 0,
+        equipment: 0,
+        battlefield: 0,
+        endurance: 0,
+        teamwork: 0,
+        magic: 0,
+        technology: 0
+      }
     };
   }
 }
