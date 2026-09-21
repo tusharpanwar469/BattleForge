@@ -7,6 +7,7 @@ import {
 import { BootScene } from "./scenes/BootScene";
 import { MenuScene } from "./scenes/MenuScene";
 import { AuctionScene } from "./scenes/AuctionScene";
+import { TeamSetupScene } from "./scenes/TeamSetupScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -14,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME_HEIGHT,
   parent: "game",
   backgroundColor: GAME_BACKGROUND,
-  scene: [BootScene, MenuScene, AuctionScene],
+  scene: [BootScene, MenuScene, TeamSetupScene, AuctionScene],
 };
 
 new Phaser.Game(config);

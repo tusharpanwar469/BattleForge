@@ -38,7 +38,7 @@ export class MenuScene extends Phaser.Scene {
         });
 
         startButton.on("pointerdown", () => {
-            this.scene.start("AuctionScene");
+            this.scene.start("TeamSetupScene");
         });
     }
 }
