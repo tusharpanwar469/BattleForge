@@ -38,6 +38,25 @@ export class TeamManager {
             eliminatedFighters: [...team.eliminatedFighters],
         };
     }
+    addFighterToRoster(teamId: string, fighterId: string): boolean {
+    const team = this.teams.find((team) => team.id === teamId);
+
+    if (!team) {
+        return false;
+    }
+
+    if (team.roster.length >= 16) {
+        return false;
+    }
+
+    if (team.roster.includes(fighterId)) {
+        return false;
+    }
+
+    team.roster.push(fighterId);
+
+    return true;
+    }
 
     reset(): void {
         this.teams = [];
