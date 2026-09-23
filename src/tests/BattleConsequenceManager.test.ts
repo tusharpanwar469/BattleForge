@@ -55,7 +55,8 @@ function createBattleResult(
       teamwork: 10,
       magic: 10,
       technology: 10
-    }
+    },
+    events: []
   };
 }
 
@@ -176,3 +177,5 @@ describe("BattleConsequenceManager", () => {
     );
   });
 });
+
+

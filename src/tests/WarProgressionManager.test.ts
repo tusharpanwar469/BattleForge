@@ -33,7 +33,8 @@ function createBattleResult(round = 1): BattleResult {
       teamwork: 10,
       magic: 10,
       technology: 10
-    }
+    },
+    events: []
   };
 }
 
@@ -114,3 +115,5 @@ describe("WarProgressionManager", () => {
     );
   });
 });
+
+

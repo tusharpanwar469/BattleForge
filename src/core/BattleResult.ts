@@ -1,3 +1,4 @@
+import type { BattleEvent } from "./BattleEvent";
 import type { BattleFactors } from "./BattleFactors";
 
 export interface BattleResult {
@@ -6,4 +7,5 @@ export interface BattleResult {
   round: number;
   reason: string;
   factors: BattleFactors;
+  events: BattleEvent[];
 }

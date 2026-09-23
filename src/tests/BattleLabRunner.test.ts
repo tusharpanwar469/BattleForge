@@ -59,7 +59,8 @@ const battleResult: BattleResult = {
     teamwork: 10,
     magic: 10,
     technology: 10
-  }
+  },
+    events: []
 };
 
 function createRunner(): BattleLabRunner {
@@ -108,3 +109,5 @@ describe("BattleLabRunner", () => {
     );
   });
 });
+
+

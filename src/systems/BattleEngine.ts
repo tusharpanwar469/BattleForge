@@ -74,7 +74,8 @@ export class BattleEngine {
         `${Math.max(scoreA, scoreB)} against ` +
         `${loserTeamId} with a battle score of ` +
         `${Math.min(scoreA, scoreB)}.`,
-      factors: winningFactors
+      factors: winningFactors,
+      events: []
     };
   }
 
