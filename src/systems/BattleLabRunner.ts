@@ -48,6 +48,21 @@ export class BattleLabRunner {
       input.deploymentB,
       this.registry
     );
+    const validationNotes: string[] = [];
+
+if (result.round !== input.gameState.round) {
+  validationNotes.push(
+    `Battle result round ${result.round} does not match game state round ${input.gameState.round}.`
+  );
+}
+
+for (const event of result.events) {
+  if (event.round !== result.round) {
+    validationNotes.push(
+      `Battle event "${event.type}" has round ${event.round}, but battle result round is ${result.round}.`
+    );
+  }
+}
 
     return {
       scenarioId: scenario.id,
@@ -59,9 +74,10 @@ export class BattleLabRunner {
 })),
       explanation: result.reason,
       validation: {
-        isValid: true,
-        notes: []
+  isValid: validationNotes.length === 0,
+  notes: validationNotes
+}
       }
     };
   }
-}
+

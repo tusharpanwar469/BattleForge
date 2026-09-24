@@ -124,22 +124,55 @@ describe("BattleLabRunner", () => {
 
   expect(result.explanation).toBe(battleResult.reason);
 });
+it("validates battle result and event rounds", () => {
+  const runner = createRunner();
 
-  it("rejects an invalid deployment", () => {
-    const runner = createRunner();
+  const result = runner.runScenario(scenario, input);
 
-    const invalidInput: BattleLabInputSnapshot = {
-      ...input,
-      deploymentA: {
-        teamId: "team-a",
-        fighterIds: ["unknown-fighter"]
-      }
-    };
+  expect(result.validation.isValid).toBe(true);
+  expect(result.validation.notes).toEqual([]);
+});
+it("validates battle result and event rounds", () => {
+  const runner = createRunner();
 
-    expect(() => runner.runScenario(scenario, invalidInput)).toThrow(
-      'Battle Lab scenario "lab-001" is invalid'
-    );
-  });
+  const result = runner.runScenario(scenario, input);
+
+  expect(result.validation.isValid).toBe(true);
+  expect(result.validation.notes).toEqual([]);
 });
 
+it("reports a battle round mismatch", () => {
+  const runner = new BattleLabRunner(
+    {
+      resolveBattle: () => ({
+        ...battleResult,
+        round: 2
+      })
+    } as unknown as BattleEngine,
+    new FighterRegistry()
+  );
 
+  const result = runner.runScenario(scenario, input);
+
+  expect(result.validation.isValid).toBe(false);
+  expect(result.validation.notes).toContain(
+    "Battle result round 2 does not match game state round 1."
+  );
+});
+
+it("rejects an invalid deployment", () => {
+  const runner = createRunner();
+
+  const invalidInput: BattleLabInputSnapshot = {
+    ...input,
+    deploymentA: {
+      teamId: "team-a",
+      fighterIds: ["unknown-fighter"]
+    }
+  };
+
+  expect(() => runner.runScenario(scenario, invalidInput)).toThrow(
+    'Battle Lab scenario "lab-001" is invalid'
+  );
+});
+});
