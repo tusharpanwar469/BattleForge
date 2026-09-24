@@ -1,3 +1,4 @@
+import type { BattleEvent } from "../core/BattleEvent";
 import type { BattleDeployment } from "../core/BattleDeployment";
 import type { BattleFactors } from "../core/BattleFactors";
 import type { BattleResult } from "../core/BattleResult";
@@ -75,10 +76,47 @@ export class BattleEngine {
         `${loserTeamId} with a battle score of ` +
         `${Math.min(scoreA, scoreB)}.`,
       factors: winningFactors,
-      events: []
-    };
+      events: this.createBattleEvents(
+  gameState.round,
+  winnerTeamId,
+  loserTeamId,
+  scoreA,
+  scoreB
+      )
+ };
   }
+private createBattleEvents(
+  round: number,
+  winnerTeamId: string,
+  loserTeamId: string,
+  scoreA: number,
+  scoreB: number
+): BattleEvent[] {
+  const winningScore = Math.max(scoreA, scoreB);
+  const losingScore = Math.min(scoreA, scoreB);
 
+  return [
+    {
+      type: "CLASH",
+      round,
+      description: "The two deployed teams engaged in battle."
+    },
+    {
+      type: "ADVANTAGE",
+      round,
+      description:
+        `${winnerTeamId} gained the advantage with a battle score of ` +
+        `${winningScore} against ${loserTeamId} with ` +
+        `${losingScore}.`
+    },
+    {
+      type: "VICTORY",
+      round,
+      description:
+        `${winnerTeamId} achieved victory over ${loserTeamId}.`
+    }
+  ];
+}
   private aggregateDeploymentFactors(
     deployment: BattleDeployment,
     registry: FighterRegistry

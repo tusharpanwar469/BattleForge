@@ -96,6 +96,23 @@ describe("BattleEngine resolution", () => {
 
     expect(result.winnerTeamId).toBe("team-a");
     expect(result.loserTeamId).toBe("team-b");
+    expect(result.events).toHaveLength(3);
+
+expect(result.events.map((event) => event.type)).toEqual([
+  "CLASH",
+  "ADVANTAGE",
+  "VICTORY"
+]);
+
+expect(
+  result.events.every((event) => event.round === 3)
+).toBe(true);
+
+expect(result.events[1].description).toContain("team-a");
+expect(result.events[1].description).toContain("team-b");
+
+expect(result.events[2].description).toContain("team-a");
+expect(result.events[2].description).toContain("team-b");
   });
 
   it("aggregates factors from all deployed fighters", () => {
