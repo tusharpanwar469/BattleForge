@@ -5,18 +5,19 @@ import type { BattleResult } from "../core/BattleResult";
 import type { GameState } from "../core/GameState";
 import type { TeamState } from "../core/TeamState";
 import {
-  DEFAULT_BATTLE_FACTOR_WEIGHTS,
-  type BattleFactorWeights
-} from "../config/BattleFactorWeights";
+  DEFAULT_BATTLE_CALIBRATION
+} from "../config/BattleCalibration";
+import type { BattleFactorWeights } from "../config/BattleFactorWeights";
+
 import { calculateBattleScore } from "./BattleScoring";
 import { validateBattleDeployment } from "./BattleDeploymentValidator";
 import type { FighterRegistry } from "./FighterRegistry";
 
 export class BattleEngine {
-  constructor(
-    private readonly weights: BattleFactorWeights = DEFAULT_BATTLE_FACTOR_WEIGHTS
-  ) {}
-
+constructor(
+  private readonly weights: BattleFactorWeights =
+    DEFAULT_BATTLE_CALIBRATION.factorWeights
+) {}
   calculateScore(factors: BattleFactors): number {
     return calculateBattleScore(factors, this.weights);
   }
