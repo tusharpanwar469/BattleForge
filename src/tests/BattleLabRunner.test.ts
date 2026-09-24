@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { BattleLabInputSnapshot, BattleLabScenario } from "../core/BattleLab";
+import type {
+  BattleLabInputSnapshot,
+  BattleLabScenario
+} from "../core/BattleLab";
 import type { BattleResult } from "../core/BattleResult";
 import type { BattleEngine } from "../systems/BattleEngine";
 import { BattleLabRunner } from "../systems/BattleLabRunner";
@@ -60,23 +63,23 @@ const battleResult: BattleResult = {
     magic: 10,
     technology: 10
   },
-    events: [
-  {
-    type: "CLASH",
-    round: 1,
-    description: "The two deployed teams engaged in battle."
-  },
-  {
-    type: "ADVANTAGE",
-    round: 1,
-    description: "team-a gained the advantage."
-  },
-  {
-    type: "VICTORY",
-    round: 1,
-    description: "team-a achieved victory over team-b."
-  }
-]
+  events: [
+    {
+      type: "CLASH",
+      round: 1,
+      description: "The two deployed teams engaged in battle."
+    },
+    {
+      type: "ADVANTAGE",
+      round: 1,
+      description: "team-a gained the advantage."
+    },
+    {
+      type: "VICTORY",
+      round: 1,
+      description: "team-a achieved victory over team-b."
+    }
+  ]
 };
 
 function createRunner(): BattleLabRunner {
@@ -99,80 +102,108 @@ describe("BattleLabRunner", () => {
     expect(result.eventTrace).toHaveLength(3);
   });
 
- it("records the authoritative Battle Engine events", () => {
-  const runner = createRunner();
+  it("records the authoritative Battle Engine events", () => {
+    const runner = createRunner();
 
-  const result = runner.runScenario(scenario, input);
+    const result = runner.runScenario(scenario, input);
 
-  expect(result.eventTrace.map((event) => event.event)).toEqual([
-    "CLASH",
-    "ADVANTAGE",
-    "VICTORY"
-  ]);
+    expect(result.eventTrace.map((event) => event.event)).toEqual([
+      "CLASH",
+      "ADVANTAGE",
+      "VICTORY"
+    ]);
 
-  expect(result.eventTrace[0].description).toBe(
-    battleResult.events[0].description
-  );
+    expect(result.eventTrace[0].description).toBe(
+      battleResult.events[0].description
+    );
 
-  expect(result.eventTrace[1].description).toBe(
-    battleResult.events[1].description
-  );
+    expect(result.eventTrace[1].description).toBe(
+      battleResult.events[1].description
+    );
 
-  expect(result.eventTrace[2].description).toBe(
-    battleResult.events[2].description
-  );
+    expect(result.eventTrace[2].description).toBe(
+      battleResult.events[2].description
+    );
 
-  expect(result.explanation).toBe(battleResult.reason);
-});
-it("validates battle result and event rounds", () => {
-  const runner = createRunner();
+    expect(result.explanation).toBe(battleResult.reason);
+  });
 
-  const result = runner.runScenario(scenario, input);
+  it("validates battle result and event rounds", () => {
+    const runner = createRunner();
 
-  expect(result.validation.isValid).toBe(true);
-  expect(result.validation.notes).toEqual([]);
-});
-it("validates battle result and event rounds", () => {
-  const runner = createRunner();
+    const result = runner.runScenario(scenario, input);
 
-  const result = runner.runScenario(scenario, input);
+    expect(result.validation.isValid).toBe(true);
+    expect(result.validation.notes).toEqual([]);
+  });
 
-  expect(result.validation.isValid).toBe(true);
-  expect(result.validation.notes).toEqual([]);
-});
+  it("reports a battle round mismatch", () => {
+    const runner = new BattleLabRunner(
+      {
+        resolveBattle: () => ({
+          ...battleResult,
+          round: 2
+        })
+      } as unknown as BattleEngine,
+      new FighterRegistry()
+    );
 
-it("reports a battle round mismatch", () => {
-  const runner = new BattleLabRunner(
-    {
-      resolveBattle: () => ({
-        ...battleResult,
-        round: 2
-      })
-    } as unknown as BattleEngine,
-    new FighterRegistry()
-  );
+    const result = runner.runScenario(scenario, input);
 
-  const result = runner.runScenario(scenario, input);
+    expect(result.validation.isValid).toBe(false);
+    expect(result.validation.notes).toContain(
+      "Battle result round 2 does not match game state round 1."
+    );
+  });
 
-  expect(result.validation.isValid).toBe(false);
-  expect(result.validation.notes).toContain(
-    "Battle result round 2 does not match game state round 1."
-  );
-});
+  it("reports a battle event round mismatch", () => {
+    const runner = new BattleLabRunner(
+      {
+        resolveBattle: () => ({
+          ...battleResult,
+          events: [
+            {
+              type: "CLASH",
+              round: 2,
+              description: "The two deployed teams engaged in battle."
+            },
+            {
+              type: "ADVANTAGE",
+              round: 1,
+              description: "team-a gained the advantage."
+            },
+            {
+              type: "VICTORY",
+              round: 1,
+              description: "team-a achieved victory over team-b."
+            }
+          ]
+        })
+      } as unknown as BattleEngine,
+      new FighterRegistry()
+    );
 
-it("rejects an invalid deployment", () => {
-  const runner = createRunner();
+    const result = runner.runScenario(scenario, input);
 
-  const invalidInput: BattleLabInputSnapshot = {
-    ...input,
-    deploymentA: {
-      teamId: "team-a",
-      fighterIds: ["unknown-fighter"]
-    }
-  };
+    expect(result.validation.isValid).toBe(false);
+    expect(result.validation.notes).toContain(
+      'Battle event "CLASH" has round 2, but battle result round is 1.'
+    );
+  });
 
-  expect(() => runner.runScenario(scenario, invalidInput)).toThrow(
-    'Battle Lab scenario "lab-001" is invalid'
-  );
-});
+  it("rejects an invalid deployment", () => {
+    const runner = createRunner();
+
+    const invalidInput: BattleLabInputSnapshot = {
+      ...input,
+      deploymentA: {
+        teamId: "team-a",
+        fighterIds: ["unknown-fighter"]
+      }
+    };
+
+    expect(() => runner.runScenario(scenario, invalidInput)).toThrow(
+      'Battle Lab scenario "lab-001" is invalid'
+    );
+  });
 });
