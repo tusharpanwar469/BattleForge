@@ -53,16 +53,10 @@ export class BattleLabRunner {
       scenarioId: scenario.id,
       input,
       result,
-      eventTrace: [
-        {
-          event: "battle-start",
-          description: `Battle Lab scenario "${scenario.name}" started.`
-        },
-        {
-          event: "battle-resolved",
-          description: result.reason
-        }
-      ],
+     eventTrace: result.events.map((event) => ({
+  event: event.type,
+  description: event.description
+})),
       explanation: result.reason,
       validation: {
         isValid: true,

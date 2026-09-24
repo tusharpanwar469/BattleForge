@@ -60,7 +60,23 @@ const battleResult: BattleResult = {
     magic: 10,
     technology: 10
   },
-    events: []
+    events: [
+  {
+    type: "CLASH",
+    round: 1,
+    description: "The two deployed teams engaged in battle."
+  },
+  {
+    type: "ADVANTAGE",
+    round: 1,
+    description: "team-a gained the advantage."
+  },
+  {
+    type: "VICTORY",
+    round: 1,
+    description: "team-a achieved victory over team-b."
+  }
+]
 };
 
 function createRunner(): BattleLabRunner {
@@ -80,18 +96,34 @@ describe("BattleLabRunner", () => {
     expect(result.scenarioId).toBe("lab-001");
     expect(result.result).toEqual(battleResult);
     expect(result.validation.isValid).toBe(true);
-    expect(result.eventTrace).toHaveLength(2);
+    expect(result.eventTrace).toHaveLength(3);
   });
 
-  it("records the battle start and resolution events", () => {
-    const runner = createRunner();
+ it("records the authoritative Battle Engine events", () => {
+  const runner = createRunner();
 
-    const result = runner.runScenario(scenario, input);
+  const result = runner.runScenario(scenario, input);
 
-    expect(result.eventTrace[0].event).toBe("battle-start");
-    expect(result.eventTrace[1].event).toBe("battle-resolved");
-    expect(result.explanation).toBe(battleResult.reason);
-  });
+  expect(result.eventTrace.map((event) => event.event)).toEqual([
+    "CLASH",
+    "ADVANTAGE",
+    "VICTORY"
+  ]);
+
+  expect(result.eventTrace[0].description).toBe(
+    battleResult.events[0].description
+  );
+
+  expect(result.eventTrace[1].description).toBe(
+    battleResult.events[1].description
+  );
+
+  expect(result.eventTrace[2].description).toBe(
+    battleResult.events[2].description
+  );
+
+  expect(result.explanation).toBe(battleResult.reason);
+});
 
   it("rejects an invalid deployment", () => {
     const runner = createRunner();
