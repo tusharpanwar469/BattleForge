@@ -1,3 +1,5 @@
+import { OpeningCinematicScene } from "./visual/OpeningCinematicScene";
+import { VisualLabScene } from "./visual/VisualLabScene";
 import Phaser from "phaser";
 import {
   GAME_WIDTH,
@@ -12,7 +14,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME_HEIGHT,
   parent: "game",
   backgroundColor: GAME_BACKGROUND,
-  scene: BootScene,
+  scene: [OpeningCinematicScene, VisualLabScene, BootScene],
 };
 
 new Phaser.Game(config);
