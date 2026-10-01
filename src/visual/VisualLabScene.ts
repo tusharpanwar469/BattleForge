@@ -1,3 +1,4 @@
+import { CameraController } from "./CameraController";
 import Phaser from "phaser";
 
 export class VisualLabScene extends Phaser.Scene {
@@ -17,6 +18,19 @@ export class VisualLabScene extends Phaser.Scene {
         height,
         0x080b14
     );
+    const cameraTestLabel = this.add.text(
+    20,
+    55,
+    "CAMERA TEST",
+    {
+        fontSize: "18px",
+        color: "#ffffff",
+        backgroundColor: "#000000",
+        padding: { x: 8, y: 5 }
+    }
+);
+
+cameraTestLabel.setDepth(100);
 
     // Atmosphere layer
     const atmosphereLayer = this.add.rectangle(
@@ -293,16 +307,82 @@ this.tweens.add({
     duration: 900,
     ease: "Back.easeOut"
 });
+const flashTestLabel = this.add.text(
+    20,
+    85,
+    "FLASH TEST",
+    {
+        fontSize: "18px",
+        color: "#ffffff",
+        backgroundColor: "#000000",
+        padding: { x: 8, y: 5 }
+    }
+);
+
+flashTestLabel.setDepth(100);
 // Camera test — controlled push-in and pull-out
 const camera = this.cameras.main;
+const cameraController = new CameraController(this);
+this.time.delayedCall(10500, () => {
+    cameraController.setPosition(
+        width / 2,
+        height * 0.6
+    );
 
-this.tweens.add({
-    targets: camera,
-    zoom: 1.08,
-    duration: 2500,
-    yoyo: true,
-    repeat: -1,
-    ease: "Sine.easeInOut"
+    this.time.delayedCall(1000, () => {
+        cameraController.setPosition(
+            width / 2,
+            height / 2
+        );
+    });
+});
+this.time.delayedCall(8500, () => {
+    cameraController.zoomTo(1.1, 1000);
+
+    this.time.delayedCall(1200, () => {
+        cameraController.zoomTo(1, 1000);
+    });
+});
+this.time.delayedCall(5500, () => {
+    cameraController.fadeOut(800);
+
+    this.time.delayedCall(1000, () => {
+        cameraController.fadeIn(800);
+    });
+});
+this.time.delayedCall(7500, () => {
+    cameraController.flash(300);
+});
+const runCameraTest = () => {
+    cameraController.zoomTo(1.08, 1500);
+
+    this.time.delayedCall(1500, () => {
+        cameraController.focusOn(
+            width / 2,
+            height * 0.68,
+            1200
+        );
+    });
+
+    this.time.delayedCall(3000, () => {
+        cameraController.shake(350, 0.012);
+    });
+
+    this.time.delayedCall(4000, () => {
+        cameraController.reset(1000);
+    });
+};
+
+this.time.delayedCall(500, runCameraTest);
+
+cameraController.zoomTo(1.08, 1500);
+
+this.time.delayedCall(1500, () => {
+    cameraController.focusOn(
+        width / 2,
+        height * 0.68,
+        1200
+    );
 });
 
 // Visual Lab label

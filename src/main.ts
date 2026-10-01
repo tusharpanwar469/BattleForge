@@ -14,7 +14,7 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME_HEIGHT,
   parent: "game",
   backgroundColor: GAME_BACKGROUND,
-  scene: [OpeningCinematicScene, VisualLabScene, BootScene],
+  scene: [VisualLabScene, OpeningCinematicScene, BootScene],
 };
 
 new Phaser.Game(config);
