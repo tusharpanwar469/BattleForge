@@ -327,9 +327,12 @@ this.time.delayedCall(12000, () => {
     cameraController.rotateTo(0.04, 700);
 
     this.time.delayedCall(300, () => {
-        cameraController.stop();
-        cameraController.rotateTo(0, 500);
-    });
+    cameraController.stop();
+    cameraController.resetRotation(500);
+   });
+});
+this.time.delayedCall(13500, () => {
+    cameraController.resetAll(800);
 });
 this.time.delayedCall(10500, () => {
     cameraController.setPosition(

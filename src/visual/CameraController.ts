@@ -41,6 +41,34 @@ setRotation(
 ): void {
     this.camera.setRotation(rotation);
 }
+resetRotation(
+    duration: number = 400
+): void {
+    this.scene.tweens.add({
+        targets: this.camera,
+        rotation: 0,
+        duration,
+        ease: "Sine.easeOut"
+    });
+}
+resetAll(
+    duration: number = 500
+): void {
+    this.stop();
+
+    this.camera.zoomTo(
+        1,
+        duration,
+        "Sine.easeInOut"
+    );
+
+    this.resetRotation(duration);
+
+    this.camera.centerOn(
+        this.camera.width / 2,
+        this.camera.height / 2
+    );
+}
 setPosition(
     x: number,
     y: number
