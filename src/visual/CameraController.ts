@@ -2,10 +2,12 @@ import Phaser from "phaser";
 
 export class CameraController {
     private camera: Phaser.Cameras.Scene2D.Camera;
+    private scene: Phaser.Scene;
 
     constructor(scene: Phaser.Scene) {
-        this.camera = scene.cameras.main;
-    }
+    this.scene = scene;
+    this.camera = scene.cameras.main;
+}
 
     zoomTo(
         zoom: number,
@@ -34,11 +36,30 @@ export class CameraController {
         "Sine.easeInOut"
     );
 }
+setRotation(
+    rotation: number
+): void {
+    this.camera.setRotation(rotation);
+}
 setPosition(
     x: number,
     y: number
 ): void {
     this.camera.centerOn(x, y);
+}
+rotateTo(
+    rotation: number,
+    duration: number = 500
+): void {
+    this.scene.tweens.add({
+        targets: this.camera,
+        rotation,
+        duration,
+        ease: "Sine.easeInOut"
+    });
+}
+stop(): void {
+    this.scene.tweens.killTweensOf(this.camera);
 }
 panTo(
     x: number,
@@ -51,6 +72,9 @@ panTo(
         duration,
         "Sine.easeInOut"
     );
+}
+isMoving(): boolean {
+    return this.camera.active;
 }
 shake(
     duration: number = 300,
