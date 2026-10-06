@@ -326,6 +326,10 @@ const cameraController = new CameraController(this);
 this.time.delayedCall(14500, () => {
     cameraController.flash(250, 0xffffff, 0.8);
 });
+
+this.time.delayedCall(15000, () => {
+    cameraController.pulse(1.05, 180);
+});
 this.time.delayedCall(12000, () => {
     cameraController.rotateTo(0.04, 700);
 

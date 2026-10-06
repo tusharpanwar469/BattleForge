@@ -69,6 +69,26 @@ resetAll(
         this.camera.height / 2
     );
 }
+pulse(
+    zoom: number = 1.04,
+    duration: number = 180
+): void {
+    const originalZoom = this.camera.zoom;
+
+    this.camera.zoomTo(
+        zoom,
+        duration,
+        "Sine.easeOut"
+    );
+
+    this.scene.time.delayedCall(duration, () => {
+        this.camera.zoomTo(
+            originalZoom,
+            duration,
+            "Sine.easeInOut"
+        );
+    });
+}
 setPosition(
     x: number,
     y: number
