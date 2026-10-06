@@ -74,7 +74,7 @@ panTo(
     );
 }
 isMoving(): boolean {
-    return this.camera.active;
+    return this.scene.tweens.getTweensOf(this.camera).length > 0;
 }
 shake(
     duration: number = 300,
