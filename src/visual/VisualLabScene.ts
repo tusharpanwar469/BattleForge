@@ -323,6 +323,9 @@ flashTestLabel.setDepth(100);
 // Camera test — controlled push-in and pull-out
 const camera = this.cameras.main;
 const cameraController = new CameraController(this);
+this.time.delayedCall(14500, () => {
+    cameraController.flash(250, 0xffffff, 0.8);
+});
 this.time.delayedCall(12000, () => {
     cameraController.rotateTo(0.04, 700);
 
