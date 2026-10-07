@@ -36,6 +36,17 @@ export class CameraController {
         "Sine.easeInOut"
     );
 }
+focus(
+    x: number,
+    y: number,
+    duration: number = 700
+): void {
+    this.focusOn(
+        x,
+        y,
+        duration
+    );
+}
 setRotation(
     rotation: number
 ): void {
@@ -88,6 +99,57 @@ pulse(
             "Sine.easeInOut"
         );
     });
+}
+settle(
+    duration: number = 350
+): void {
+    this.scene.tweens.add({
+        targets: this.camera,
+        rotation: 0,
+        zoom: 1,
+        duration,
+        ease: "Sine.easeOut"
+    });
+}
+impact(): void {
+    this.stop();
+
+    this.camera.shake(
+        180,
+        0.008
+    );
+
+    this.pulse(
+        1.04,
+        120
+    );
+
+    this.rotateTo(
+        0.025,
+        120
+    );
+
+    this.scene.time.delayedCall(180, () => {
+        this.settle(350);
+    });
+}
+focusAndImpact(
+    x: number,
+    y: number,
+    focusDuration: number = 500
+): void {
+    this.focusOn(
+        x,
+        y,
+        focusDuration
+    );
+
+    this.scene.time.delayedCall(
+        focusDuration + 150,
+        () => {
+            this.impact();
+        }
+    );
 }
 setPosition(
     x: number,

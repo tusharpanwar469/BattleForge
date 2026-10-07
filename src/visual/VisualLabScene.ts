@@ -320,6 +320,32 @@ const flashTestLabel = this.add.text(
 );
 
 flashTestLabel.setDepth(100);
+const impactTestLabel = this.add.text(
+    20,
+    115,
+    "IMPACT TEST",
+    {
+        fontSize: "18px",
+        color: "#ffffff",
+        backgroundColor: "#000000",
+        padding: { x: 8, y: 5 }
+    }
+);
+
+impactTestLabel.setDepth(100);
+const focusImpactTestLabel = this.add.text(
+    20,
+    145,
+    "FOCUS + IMPACT TEST",
+    {
+        fontSize: "18px",
+        color: "#ffffff",
+        backgroundColor: "#000000",
+        padding: { x: 8, y: 5 }
+    }
+);
+
+focusImpactTestLabel.setDepth(100);
 // Camera test — controlled push-in and pull-out
 const camera = this.cameras.main;
 const cameraController = new CameraController(this);
@@ -329,6 +355,26 @@ this.time.delayedCall(14500, () => {
 
 this.time.delayedCall(15000, () => {
     cameraController.pulse(1.05, 180);
+});
+this.time.delayedCall(15400, () => {
+    cameraController.settle(500);
+});
+this.time.delayedCall(16500, () => {
+    cameraController.impact();
+});
+this.time.delayedCall(18000, () => {
+    cameraController.focusAndImpact(
+        width / 2,
+        height * 0.55,
+        600
+    );
+});
+this.time.delayedCall(19500, () => {
+    cameraController.focus(
+        width / 2,
+        height * 0.5,
+        700
+    );
 });
 this.time.delayedCall(12000, () => {
     cameraController.rotateTo(0.04, 700);
