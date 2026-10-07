@@ -349,6 +349,29 @@ focusImpactTestLabel.setDepth(100);
 // Camera test — controlled push-in and pull-out
 const camera = this.cameras.main;
 const cameraController = new CameraController(this);
+this.time.delayedCall(22000, () => {
+    cameraController.zoomTo(1.06, 900);
+
+    this.time.delayedCall(900, () => {
+        cameraController.focusOn(
+            width / 2,
+            height * 0.55,
+            700
+        );
+    });
+
+    this.time.delayedCall(1600, () => {
+        cameraController.focusAndImpact(
+            width / 2,
+            height * 0.55,
+            500
+        );
+    });
+
+    this.time.delayedCall(2300, () => {
+        cameraController.resetAll(900);
+    });
+});
 this.time.delayedCall(14500, () => {
     cameraController.flash(250, 0xffffff, 0.8);
 });
