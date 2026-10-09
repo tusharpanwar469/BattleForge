@@ -157,6 +157,18 @@ setPosition(
 ): void {
     this.camera.centerOn(x, y);
 }
+moveTo(
+    x: number,
+    y: number,
+    duration: number = 700
+): void {
+    this.camera.pan(
+        x,
+        y,
+        duration,
+        "Sine.easeInOut"
+    );
+}
 rotateTo(
     rotation: number,
     duration: number = 500
