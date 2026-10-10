@@ -8,6 +8,7 @@ import {
 import { TeamManager } from "../systems/TeamManager";
 import type { TeamState } from "../core/TeamState";
 import { BATTLEFORGE_CHARACTERS } from "../data/BattleForgeCharacters";
+import { AUCTION_FIGHTERS } from "../data/AuctionFighters";
 
 export class TradeScene extends Phaser.Scene {
     private teamManager!: TeamManager;
@@ -16,6 +17,11 @@ export class TradeScene extends Phaser.Scene {
     private tradeManager!: TradeManager;
 
     private teams: TeamState[] = [];
+    private unsoldFighterIds: string[] = [];
+    private unsoldFighterSelect!: HTMLSelectElement;
+    private marketTeamSelect!: HTMLSelectElement;
+    private purchaseButton!: Phaser.GameObjects.Text;
+    private marketStatusText!: Phaser.GameObjects.Text;
 
     private teamASelect!: HTMLSelectElement;
     private fighterASelect!: HTMLSelectElement;
@@ -51,6 +57,9 @@ export class TradeScene extends Phaser.Scene {
 
         this.teams =
             this.teamManager.getTeams();
+
+        this.unsoldFighterIds =
+            this.game.registry.get("unsoldFighterIds") ?? [];
 
         if (this.teams.length !== 4) {
             throw new Error(
@@ -95,6 +104,14 @@ export class TradeScene extends Phaser.Scene {
                 this.fighterRegistry,
                 this.rosterManager
             );
+
+        const unsoldFighterIds: string[] =
+           this.game.registry.get("unsoldFighterIds") ?? [];
+
+        console.log(
+           "Unsold fighters available for market:",
+            unsoldFighterIds
+        );
 
         // --------------------------------------------------
         // TITLE
@@ -288,6 +305,61 @@ export class TradeScene extends Phaser.Scene {
             ).setOrigin(0.5);
 
         // --------------------------------------------------
+        // UNSOLD FIGHTER MARKET
+        // --------------------------------------------------
+
+        this.add.text(
+            640,
+            620,
+            "UNSOLD FIGHTER MARKET",
+            {
+                fontSize: "26px",
+                color: "#ffff00",
+            }
+        ).setOrigin(0.5);
+
+        this.marketTeamSelect =
+            this.createSelect(
+                350,
+                660
+            );
+
+        this.unsoldFighterSelect =
+            this.createSelect(
+                820,
+                660
+            );
+
+        this.purchaseButton =
+            this.createButton(
+                640,
+                700,
+                "BUY UNSOLD FIGHTER"
+            );
+
+        this.purchaseButton.on(
+            "pointerdown",
+            () => {
+            this.purchaseUnsoldFighter();
+           }
+        );
+
+        this.marketStatusText =
+            this.add.text(
+                640,
+                800,
+                "Select a team and an unsold fighter.",
+                {
+                    fontSize: "18px",
+                    color: "#ffffff",
+                    align: "center",
+                    wordWrap: {
+                        width: 900,
+                    },
+                }
+            ).setOrigin(0.5);
+
+        // --------------------------------------------------
         // TEAM SELECT EVENTS
         // --------------------------------------------------
 
@@ -319,6 +391,20 @@ export class TradeScene extends Phaser.Scene {
             }
         );
 
+        this.marketTeamSelect.addEventListener(
+                  "change",
+                  () => {
+                    this.updateMarketStatus();
+                   }
+                );
+
+        this.unsoldFighterSelect.addEventListener(
+                 "change",
+                 () => {
+                this.updateMarketStatus();
+            }
+        );
+
         this.fighterASelect.addEventListener(
             "change",
             () => {
@@ -347,6 +433,10 @@ export class TradeScene extends Phaser.Scene {
             this.teamBSelect
         );
 
+        this.populateTeamSelect(
+            this.marketTeamSelect
+        );
+
         if (this.teams.length >= 2) {
             this.teamASelect.value =
                 this.teams[0].id;
@@ -365,8 +455,12 @@ export class TradeScene extends Phaser.Scene {
             this.fighterBSelect
         );
 
+        this.populateUnsoldFighterSelect();
         this.updateConfirmationButtons();
         this.updateStatus();
+
+        this.marketTeamSelect.value =
+            this.teams[0].id;
     }
 
     // --------------------------------------------------
@@ -490,6 +584,161 @@ export class TradeScene extends Phaser.Scene {
                 );
             }
         );
+    }
+
+    private populateUnsoldFighterSelect(): void {
+    this.unsoldFighterSelect.innerHTML = "";
+
+    if (this.unsoldFighterIds.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No unsold fighters available";
+        this.unsoldFighterSelect.appendChild(option);
+        return;
+    }
+
+    for (const fighterId of this.unsoldFighterIds) {
+        const fighter = this.fighterRegistry.getById(fighterId);
+
+        if (!fighter) {
+            continue;
+        }
+
+        const auctionFighter = AUCTION_FIGHTERS.find(
+            (entry) =>
+             entry.id.toLowerCase() === fighterId.toLowerCase()
+        );
+
+        if (!auctionFighter) {
+            continue;
+        }
+
+        const option = document.createElement("option");
+        option.value = fighter.id;
+        option.textContent = `${fighter.name} — Base Price: $${auctionFighter.basePrice}`;
+
+        this.unsoldFighterSelect.appendChild(option);
+    }
+    }
+
+    private updateMarketStatus(): void {
+    const team = this.getSelectedTeam(
+        this.marketTeamSelect
+    );
+
+    const fighterId =
+        this.unsoldFighterSelect.value;
+
+    if (!team) {
+        this.marketStatusText.setText(
+            "Please select a team."
+        );
+        return;
+    }
+
+    if (!fighterId) {
+        this.marketStatusText.setText(
+            "No unsold fighters available."
+        );
+        return;
+    }
+
+    const fighter =
+        this.fighterRegistry.getById(fighterId);
+
+    if (!fighter) {
+        this.marketStatusText.setText(
+            "Selected fighter was not found."
+        );
+        return;
+    }
+
+    this.marketStatusText.setText(
+        `${team.name} selected: ${fighter.name}`
+    );
+    }
+
+    private purchaseUnsoldFighter(): void {
+    const team = this.getSelectedTeam(
+        this.marketTeamSelect
+    );
+
+    const fighterId =
+        this.unsoldFighterSelect.value;
+
+    if (!team || !fighterId) {
+        this.marketStatusText.setText(
+            "Select a team and an unsold fighter."
+        );
+        return;
+    }
+
+    if (!this.unsoldFighterIds.includes(fighterId)) {
+        this.marketStatusText.setText(
+            "This fighter is no longer available."
+        );
+        return;
+    }
+
+    const fighter =
+        this.fighterRegistry.getById(fighterId);
+
+    const auctionFighter =
+        AUCTION_FIGHTERS.find(
+            (entry) =>
+                entry.id.toLowerCase() ===
+                fighterId.toLowerCase()
+        );
+
+    if (!fighter || !auctionFighter) {
+        this.marketStatusText.setText(
+            "Fighter data or base price was not found."
+        );
+        return;
+    }
+
+    const price = auctionFighter.basePrice;
+
+    if (team.budget < price) {
+        this.marketStatusText.setText(
+            `${team.name} cannot afford ${fighter.name}.`
+        );
+        return;
+    }
+
+    const result = this.rosterManager.addFighter(
+        team,
+        fighter.id
+    );
+
+    if (!result.success) {
+        this.marketStatusText.setText(
+            result.errors[0] ?? "Purchase failed."
+        );
+        return;
+    }
+
+    team.budget -= price;
+
+    this.unsoldFighterIds =
+        this.unsoldFighterIds.filter(
+            (id) =>
+                id.toLowerCase() !==
+                fighter.id.toLowerCase()
+        );
+
+    this.game.registry.set(
+        "unsoldFighterIds",
+        [...this.unsoldFighterIds]
+    );
+
+    this.populateUnsoldFighterSelect();
+
+    this.marketStatusText.setText(
+        `${team.name} purchased ${fighter.name} for $${price}. Remaining budget: $${team.budget}.`
+    );
+
+    this.updateMarketStatus();
     }
 
     // --------------------------------------------------

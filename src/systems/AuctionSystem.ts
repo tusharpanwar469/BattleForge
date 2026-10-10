@@ -71,7 +71,6 @@ export class AuctionSystem {
             1,
             2,
             5,
-            10,
         ];
 
         if (
@@ -139,6 +138,44 @@ export class AuctionSystem {
         this.confirmedTeamIds.clear();
 
         return true;
+    }
+
+    placeOpeningBid(team: TeamState): boolean {
+    if (this.isAuctionExpired()) {
+        return false;
+    }
+
+    if (
+        this.saleConfirmed ||
+        this.currentBid !== null ||
+        this.highestBidderId !== null
+    ) {
+        return false;
+    }
+
+    const basePrice = this.getBasePrice();
+
+    const existingReservation =
+        this.reservedBids.get(team.id) ?? 0;
+
+    const availableBudget =
+        team.budget - existingReservation;
+
+    if (basePrice > availableBudget) {
+        return false;
+    }
+
+    this.currentBid = basePrice;
+    this.highestBidderId = team.id;
+
+    this.reservedBids.set(team.id, basePrice);
+
+    this.resetAuctionTimer();
+
+    this.confirmationRequested = false;
+    this.confirmedTeamIds.clear();
+
+    return true;
     }
 
     /**
