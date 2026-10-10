@@ -38,12 +38,27 @@ export class AuctionSystem {
     }
 
     getRemainingBudget(team: TeamState): number {
-        const reservedBid = this.reservedBids.get(team.id) ?? 0;
+        const reservedBid =
+            this.reservedBids.get(team.id) ?? 0;
 
         return team.budget - reservedBid;
     }
 
-    placeBid(team: TeamState, increment: number): boolean {
+    /**
+     * Clears the temporary auction reservation for a team.
+     *
+     * This must be called only after a successful sale
+     * settlement, because AuctionSaleManager has already
+     * deducted the final price from the authoritative budget.
+     */
+    clearReservation(teamId: string): void {
+        this.reservedBids.delete(teamId);
+    }
+
+    placeBid(
+        team: TeamState,
+        increment: number
+    ): boolean {
         if (this.isAuctionExpired()) {
             return false;
         }
@@ -52,43 +67,75 @@ export class AuctionSystem {
             return false;
         }
 
-        const allowedIncrements = [1, 2, 5, 10];
+        const allowedIncrements = [
+            1,
+            2,
+            5,
+            10,
+        ];
 
-        if (!allowedIncrements.includes(increment)) {
+        if (
+            !allowedIncrements.includes(
+                increment
+            )
+        ) {
             return false;
         }
 
-        if (this.highestBidderId === team.id) {
+        if (
+            this.highestBidderId ===
+            team.id
+        ) {
             return false;
         }
 
         const currentAuctionPrice =
-            this.currentBid ?? this.getBasePrice();
+            this.currentBid ??
+            this.getBasePrice();
 
-        const newBid = currentAuctionPrice + increment;
+        const newBid =
+            currentAuctionPrice +
+            increment;
 
         const existingReservation =
-            this.reservedBids.get(team.id) ?? 0;
+            this.reservedBids.get(
+                team.id
+            ) ?? 0;
 
         const availableBudget =
-            team.budget - existingReservation;
+            team.budget -
+            existingReservation;
 
-        if (newBid > availableBudget) {
+        if (
+            newBid >
+            availableBudget
+        ) {
             return false;
         }
 
-        if (this.highestBidderId !== null) {
-            this.reservedBids.delete(this.highestBidderId);
+        if (
+            this.highestBidderId !==
+            null
+        ) {
+            this.reservedBids.delete(
+                this.highestBidderId
+            );
         }
 
         this.currentBid = newBid;
-        this.highestBidderId = team.id;
+        this.highestBidderId =
+            team.id;
 
-        this.reservedBids.set(team.id, newBid);
+        this.reservedBids.set(
+            team.id,
+            newBid
+        );
 
         this.resetAuctionTimer();
 
-        this.confirmationRequested = false;
+        this.confirmationRequested =
+            false;
+
         this.confirmedTeamIds.clear();
 
         return true;
@@ -98,8 +145,11 @@ export class AuctionSystem {
      * AuctionSystem determines the auction outcome.
      * Actual sale settlement belongs to AuctionSaleManager.
      */
-    finalizeSale(_team: TeamState): boolean {
-        return this.getAuctionOutcome() === "SOLD";
+    finalizeSale(): boolean {
+    return (
+        this.getAuctionOutcome() ===
+        "SOLD"
+        );
     }
 
     getAuctionSeconds(): number {
@@ -111,7 +161,9 @@ export class AuctionSystem {
     }
 
     tickAuctionTimer(): number {
-        if (this.auctionSeconds > 0) {
+        if (
+            this.auctionSeconds > 0
+        ) {
             this.auctionSeconds--;
         }
 
@@ -119,11 +171,17 @@ export class AuctionSystem {
     }
 
     isAuctionExpired(): boolean {
-        return this.auctionSeconds === 0;
+        return (
+            this.auctionSeconds === 0
+        );
     }
 
-    requestConfirmation(teamId: string): boolean {
-        if (this.isAuctionExpired()) {
+    requestConfirmation(
+        teamId: string
+    ): boolean {
+        if (
+            this.isAuctionExpired()
+        ) {
             return false;
         }
 
@@ -131,18 +189,27 @@ export class AuctionSystem {
             return false;
         }
 
-        if (this.highestBidderId !== teamId) {
+        if (
+            this.highestBidderId !==
+            teamId
+        ) {
             return false;
         }
 
-        this.confirmationRequested = true;
+        this.confirmationRequested =
+            true;
+
         this.confirmedTeamIds.clear();
 
         return true;
     }
 
-    confirmSale(teamId: string): boolean {
-        if (this.isAuctionExpired()) {
+    confirmSale(
+        teamId: string
+    ): boolean {
+        if (
+            this.isAuctionExpired()
+        ) {
             return false;
         }
 
@@ -150,30 +217,52 @@ export class AuctionSystem {
             return false;
         }
 
-        if (!this.confirmationRequested) {
+        if (
+            !this.confirmationRequested
+        ) {
             return false;
         }
 
-        if (this.highestBidderId === teamId) {
+        if (
+            this.highestBidderId ===
+            teamId
+        ) {
             return false;
         }
 
-        if (this.confirmedTeamIds.has(teamId)) {
+        if (
+            this.confirmedTeamIds.has(
+                teamId
+            )
+        ) {
             return false;
         }
 
-        this.confirmedTeamIds.add(teamId);
+        this.confirmedTeamIds.add(
+            teamId
+        );
 
-        if (this.confirmedTeamIds.size === 3) {
-            this.saleConfirmed = true;
-            this.confirmationRequested = false;
+        if (
+            this.confirmedTeamIds.size ===
+            3
+        ) {
+            this.saleConfirmed =
+                true;
+
+            this.confirmationRequested =
+                false;
         }
 
         return true;
     }
 
-    reset(basePrice: number): void {
-        if (basePrice < 1 || basePrice > 10) {
+    reset(
+        basePrice: number
+    ): void {
+        if (
+            basePrice < 1 ||
+            basePrice > 10
+        ) {
             throw new Error(
                 "Auction base price must be between 1 and 10."
             );
@@ -183,69 +272,112 @@ export class AuctionSystem {
         this.highestBidderId = null;
         this.reservedBids.clear();
         this.auctionSeconds = 9;
-        this.confirmationRequested = false;
+        this.confirmationRequested =
+            false;
         this.confirmedTeamIds.clear();
         this.saleConfirmed = false;
     }
 
-    setCurrentFighter(fighter: AuctionFighter): void {
-        this.currentFighter = fighter;
+    setCurrentFighter(
+        fighter: AuctionFighter
+    ): void {
+        this.currentFighter =
+            fighter;
+
         this.currentBid = null;
         this.highestBidderId = null;
         this.reservedBids.clear();
         this.auctionSeconds = 9;
-        this.confirmationRequested = false;
+
+        this.confirmationRequested =
+            false;
+
         this.confirmedTeamIds.clear();
+
         this.saleConfirmed = false;
     }
 
-    getCurrentFighter(): AuctionFighter | null {
+    getCurrentFighter():
+        AuctionFighter | null {
         return this.currentFighter;
     }
 
     getState(): AuctionState {
-        if (this.currentFighter === null) {
+        if (
+            this.currentFighter ===
+            null
+        ) {
             throw new Error(
                 "Cannot create AuctionState without a current fighter."
             );
         }
 
         return {
-            fighterId: this.currentFighter.id,
-            basePrice: this.currentFighter.basePrice,
-            currentBid: this.currentBid,
-            highestBidderTeamId: this.highestBidderId,
-            remainingSeconds: this.auctionSeconds,
-            status: this.getAuctionStatus(),
+            fighterId:
+                this.currentFighter.id,
+
+            basePrice:
+                this.currentFighter.basePrice,
+
+            currentBid:
+                this.currentBid,
+
+            highestBidderTeamId:
+                this.highestBidderId,
+
+            remainingSeconds:
+                this.auctionSeconds,
+
+            status:
+                this.getAuctionStatus(),
         };
     }
 
-    getAuctionStatus(): AuctionState["status"] {
-        if (this.saleConfirmed) {
+    getAuctionStatus():
+        AuctionState["status"] {
+        if (
+            this.saleConfirmed
+        ) {
             return "sold";
         }
 
-        if (this.isAuctionExpired()) {
-            return this.highestBidderId !== null
-                ? "sold"
-                : "unsold";
+        if (
+            this.isAuctionExpired()
+        ) {
+            return (
+                this.highestBidderId !==
+                null
+                    ? "sold"
+                    : "unsold"
+            );
         }
 
-        if (this.currentBid === null) {
+        if (
+            this.currentBid ===
+            null
+        ) {
             return "waiting";
         }
 
         return "active";
     }
 
-    getAuctionOutcome(): "SOLD" | "UNSOLD" | null {
-        const status = this.getAuctionStatus();
+    getAuctionOutcome():
+        | "SOLD"
+        | "UNSOLD"
+        | null {
+        const status =
+            this.getAuctionStatus();
 
-        if (status === "sold") {
+        if (
+            status === "sold"
+        ) {
             return "SOLD";
         }
 
-        if (status === "unsold") {
+        if (
+            status === "unsold"
+        ) {
             return "UNSOLD";
         }
 
@@ -253,10 +385,16 @@ export class AuctionSystem {
     }
 
     private getBasePrice(): number {
-        if (this.currentFighter !== null) {
-            return this.currentFighter.basePrice;
+        if (
+            this.currentFighter !==
+            null
+        ) {
+            return this.currentFighter
+                .basePrice;
         }
 
-        return this.currentBid ?? 0;
+        return (
+            this.currentBid ?? 0
+        );
     }
 }

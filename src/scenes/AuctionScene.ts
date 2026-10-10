@@ -70,7 +70,6 @@ export class AuctionScene extends Phaser.Scene {
             );
         }
 
-        // Register all BattleForge fighters.
         this.fighterRegistry =
             new FighterRegistry();
 
@@ -84,7 +83,6 @@ export class AuctionScene extends Phaser.Scene {
             );
         }
 
-        // Approved roster and sale managers.
         this.teamRosterManager =
             new TeamRosterManager(
                 this.fighterRegistry
@@ -95,7 +93,6 @@ export class AuctionScene extends Phaser.Scene {
                 this.teamRosterManager
             );
 
-        // Randomize the auction order.
         this.auctionFighters = [
             ...AUCTION_FIGHTERS,
         ];
@@ -135,10 +132,6 @@ export class AuctionScene extends Phaser.Scene {
             this.currentFighter
         );
 
-        // --------------------------------------------------
-        // TITLE
-        // --------------------------------------------------
-
         this.add.text(
             640,
             50,
@@ -149,10 +142,6 @@ export class AuctionScene extends Phaser.Scene {
             }
         ).setOrigin(0.5);
 
-        // --------------------------------------------------
-        // CURRENT PLAYER
-        // --------------------------------------------------
-
         this.add.text(
             640,
             130,
@@ -162,10 +151,6 @@ export class AuctionScene extends Phaser.Scene {
                 color: "#aaaaaa",
             }
         ).setOrigin(0.5);
-
-        // --------------------------------------------------
-        // FIGHTER NAME
-        // --------------------------------------------------
 
         this.fighterNameText =
             this.add.text(
@@ -178,10 +163,6 @@ export class AuctionScene extends Phaser.Scene {
                 }
             ).setOrigin(0.5);
 
-        // --------------------------------------------------
-        // FIGHTER PROGRESS
-        // --------------------------------------------------
-
         this.fighterProgressText =
             this.add.text(
                 640,
@@ -192,10 +173,6 @@ export class AuctionScene extends Phaser.Scene {
                     color: "#aaaaaa",
                 }
             ).setOrigin(0.5);
-
-        // --------------------------------------------------
-        // BASE PRICE
-        // --------------------------------------------------
 
         this.fighterBasePriceText =
             this.add.text(
@@ -208,10 +185,6 @@ export class AuctionScene extends Phaser.Scene {
                 }
             ).setOrigin(0.5);
 
-        // --------------------------------------------------
-        // CURRENT BID
-        // --------------------------------------------------
-
         this.currentBidText =
             this.add.text(
                 640,
@@ -223,10 +196,6 @@ export class AuctionScene extends Phaser.Scene {
                 }
             ).setOrigin(0.5);
 
-        // --------------------------------------------------
-        // LEADING TEAM
-        // --------------------------------------------------
-
         this.leadingTeamText =
             this.add.text(
                 640,
@@ -237,10 +206,6 @@ export class AuctionScene extends Phaser.Scene {
                     color: "#ffffff",
                 }
             ).setOrigin(0.5);
-
-        // --------------------------------------------------
-        // HIDDEN INTERNAL TIMER
-        // --------------------------------------------------
 
         this.auctionTimerText =
             this.add.text(
@@ -255,10 +220,6 @@ export class AuctionScene extends Phaser.Scene {
 
         this.auctionTimerText.setVisible(false);
 
-        // --------------------------------------------------
-        // AUCTION WARNING
-        // --------------------------------------------------
-
         this.auctionWarningText =
             this.add.text(
                 640,
@@ -271,10 +232,6 @@ export class AuctionScene extends Phaser.Scene {
                 }
             ).setOrigin(0.5);
 
-        // --------------------------------------------------
-        // AUCTION RESULT
-        // --------------------------------------------------
-
         this.auctionResultText =
             this.add.text(
                 640,
@@ -285,10 +242,6 @@ export class AuctionScene extends Phaser.Scene {
                     color: "#ff0000",
                 }
             ).setOrigin(0.5);
-
-        // --------------------------------------------------
-        // NEXT FIGHTER BUTTON
-        // --------------------------------------------------
 
         this.nextFighterButton =
             this.add
@@ -339,10 +292,6 @@ export class AuctionScene extends Phaser.Scene {
                 }
             }
         );
-
-        // --------------------------------------------------
-        // TEAM PANELS
-        // --------------------------------------------------
 
         const teamPositions = [
             160,
@@ -436,9 +385,7 @@ export class AuctionScene extends Phaser.Scene {
 
                                 const teamState =
                                     this.teams.find(
-                                        (
-                                            state
-                                        ) =>
+                                        (state) =>
                                             state.id ===
                                             team.id
                                     );
@@ -448,8 +395,8 @@ export class AuctionScene extends Phaser.Scene {
                                 }
 
                                 if (
-                                    teamState.roster
-                                        .length >= 16
+                                    teamState.roster.length >=
+                                    16
                                 ) {
                                     console.log(
                                         `${team.name} already has the maximum roster of 16 fighters.`
@@ -503,9 +450,6 @@ export class AuctionScene extends Phaser.Scene {
             }
         );
 
-        // Initial state:
-        // Fighter information visible,
-        // auction not started.
         this.updateFighterDisplay();
         this.prepareForNextFighter();
     }
@@ -563,9 +507,11 @@ export class AuctionScene extends Phaser.Scene {
                 "AUCTION COMPLETE — ALL 80 FIGHTERS PROCESSED"
             );
 
-            console.log(
-                "BattleForge auction completed. All 80 fighters processed."
+             console.log(
+            "BattleForge auction completed. All 80 fighters processed."
             );
+
+            this.scene.start("TradeScene");
 
             return;
         }
@@ -771,6 +717,19 @@ export class AuctionScene extends Phaser.Scene {
                 return;
             }
 
+            /*
+             * The final price has already been deducted
+             * from the authoritative team budget by
+             * AuctionSaleManager.
+             *
+             * Clear the temporary auction reservation
+             * so the final AVAILABLE amount is not
+             * double-counted.
+             */
+            this.auctionSystem.clearReservation(
+                winningTeam.id
+            );
+
             this.auctionResolved = true;
 
             this.auctionResultText.setText(
@@ -796,10 +755,6 @@ export class AuctionScene extends Phaser.Scene {
             );
         }
 
-        /*
-         * No automatic delay.
-         * The user must press NEXT FIGHTER.
-         */
         const hasNextFighter =
             this.currentFighterIndex + 1 <
             this.auctionFighters.length;
@@ -820,6 +775,8 @@ export class AuctionScene extends Phaser.Scene {
             this.auctionResultText.setText(
                 `${this.auctionResultText.text} — AUCTION COMPLETE`
             );
+
+            this.scene.start("TradeScene");
         }
     }
 
@@ -880,8 +837,7 @@ export class AuctionScene extends Phaser.Scene {
                             this.auctionSystem.getAuctionOutcome();
 
                         if (
-                            outcome ===
-                            "SOLD"
+                            outcome === "SOLD"
                         ) {
                             this.resolveCurrentAuction(
                                 "SOLD"
@@ -889,8 +845,7 @@ export class AuctionScene extends Phaser.Scene {
                         }
 
                         if (
-                            outcome ===
-                            "UNSOLD"
+                            outcome === "UNSOLD"
                         ) {
                             this.resolveCurrentAuction(
                                 "UNSOLD"
