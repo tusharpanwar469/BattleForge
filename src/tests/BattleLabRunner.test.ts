@@ -103,6 +103,27 @@ describe("BattleLabRunner", () => {
     expect(result.validation.isValid).toBe(true);
     expect(result.eventTrace).toHaveLength(3);
   });
+  it("propagates an unregistered fighter error from the real Battle Engine", () => {
+  const registry = new FighterRegistry();
+
+  registry.register({
+    id: "fighter-a",
+    name: "Fighter A",
+    factors: battleResult.factors,
+    peakScreenState: "Peak cinematic state",
+    sources: ["Registry regression test source"],
+    feats: ["Registry regression test feat"]
+  });
+
+  const runner = new BattleLabRunner(
+    new BattleEngine(),
+    registry
+  );
+
+  expect(() => runner.runScenario(scenario, input)).toThrow(
+    'Fighter "fighter-b" is not registered.'
+  );
+});
   it("propagates the real Battle Engine's tied-score error", () => {
   const registry = new FighterRegistry();
 
