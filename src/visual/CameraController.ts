@@ -207,6 +207,20 @@ shake(
         intensity
     );
 }
+shakeAndFlash(
+    shakeDuration: number = 300,
+    intensity: number = 0.01,
+    flashDuration: number = 180,
+    flashIntensity: number = 0.45
+): void {
+    this.shake(shakeDuration, intensity);
+
+    this.flash(
+        flashDuration,
+        0xffffff,
+        flashIntensity
+    );
+}
 fadeOut(
     duration: number = 800,
     color: number = 0x000000
