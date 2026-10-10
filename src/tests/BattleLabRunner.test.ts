@@ -4,7 +4,7 @@ import type {
   BattleLabScenario
 } from "../core/BattleLab";
 import type { BattleResult } from "../core/BattleResult";
-import type { BattleEngine } from "../systems/BattleEngine";
+import  { BattleEngine } from "../systems/BattleEngine";
 import { BattleLabRunner } from "../systems/BattleLabRunner";
 import { FighterRegistry } from "../systems/FighterRegistry";
 
@@ -103,6 +103,70 @@ describe("BattleLabRunner", () => {
     expect(result.validation.isValid).toBe(true);
     expect(result.eventTrace).toHaveLength(3);
   });
+  it("integrates the real Battle Engine with the registry and validates its result", () => {
+  const registry = new FighterRegistry();
+
+  const createFactors = (value: number) => ({
+    power: value,
+    durability: value,
+    speed: value,
+    intelligence: value,
+    combatSkill: value,
+    abilities: value,
+    equipment: value,
+    battlefield: value,
+    endurance: value,
+    teamwork: value,
+    magic: value,
+    technology: value
+  });
+
+  registry.register({
+    id: "fighter-a",
+    name: "Fighter A",
+    factors: createFactors(10),
+    peakScreenState: "Peak cinematic state",
+    sources: ["Integration test source"],
+    feats: ["Integration test feat"]
+  });
+
+  registry.register({
+    id: "fighter-b",
+    name: "Fighter B",
+    factors: createFactors(5),
+    peakScreenState: "Peak cinematic state",
+    sources: ["Integration test source"],
+    feats: ["Integration test feat"]
+  });
+
+  const runner = new BattleLabRunner(
+    new BattleEngine(),
+    registry
+  );
+
+  const result = runner.runScenario(scenario, input);
+
+  expect(result.scenarioId).toBe("lab-001");
+  expect(result.result.winnerTeamId).toBe("team-a");
+  expect(result.result.loserTeamId).toBe("team-b");
+  expect(result.result.round).toBe(input.gameState.round);
+
+  expect(result.result.events.map((event) => event.type)).toEqual([
+    "CLASH",
+    "ADVANTAGE",
+    "VICTORY"
+  ]);
+
+  expect(result.eventTrace.map((event) => event.event)).toEqual([
+    "CLASH",
+    "ADVANTAGE",
+    "VICTORY"
+  ]);
+
+  expect(result.validation.isValid).toBe(true);
+  expect(result.validation.notes).toEqual([]);
+  expect(result.explanation).toBe(result.result.reason);
+});
   it("reports an unexpected winner", () => {
     const runner = new BattleLabRunner(
       {
