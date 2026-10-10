@@ -49,6 +49,27 @@ export class BattleLabRunner {
       this.registry
     );
     const validationNotes: string[] = [];
+    if (result.winnerTeamId !== scenario.expectedWinnerTeamId) {
+  validationNotes.push(
+    `Expected winner "${scenario.expectedWinnerTeamId}", but Battle Engine reported "${result.winnerTeamId}".`
+  );
+}
+
+const actualEventTypes = result.events.map((event) => event.type);
+
+if (
+  actualEventTypes.length !== scenario.expectedEventTypes.length ||
+  actualEventTypes.some(
+    (eventType, index) =>
+      eventType !== scenario.expectedEventTypes[index]
+  )
+) {
+  validationNotes.push(
+    `Expected event sequence [${scenario.expectedEventTypes.join(
+      ", "
+    )}], but Battle Engine reported [${actualEventTypes.join(", ")}].`
+  );
+}
 
 if (result.round !== input.gameState.round) {
   validationNotes.push(

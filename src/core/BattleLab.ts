@@ -1,4 +1,5 @@
 import type { BattleResult } from "./BattleResult";
+import type { BattleEventType } from "./BattleEvent";
 import type { BattleDeployment } from "./BattleDeployment";
 import type { GameState } from "./GameState";
 import type { TeamState } from "./TeamState";
@@ -7,6 +8,8 @@ export interface BattleLabScenario {
   id: string;
   name: string;
   description: string;
+  expectedWinnerTeamId: string;
+  expectedEventTypes: BattleEventType[];
 }
 
 export interface BattleLabInputSnapshot {

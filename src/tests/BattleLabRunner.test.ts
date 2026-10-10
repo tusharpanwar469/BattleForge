@@ -11,7 +11,9 @@ import { FighterRegistry } from "../systems/FighterRegistry";
 const scenario: BattleLabScenario = {
   id: "lab-001",
   name: "Basic Battle",
-  description: "Basic Battle Lab scenario."
+  description: "Basic Battle Lab scenario.",
+  expectedWinnerTeamId: "team-a",
+  expectedEventTypes: ["CLASH", "ADVANTAGE", "VICTORY"]
 };
 
 const input: BattleLabInputSnapshot = {
@@ -100,6 +102,60 @@ describe("BattleLabRunner", () => {
     expect(result.result).toEqual(battleResult);
     expect(result.validation.isValid).toBe(true);
     expect(result.eventTrace).toHaveLength(3);
+  });
+  it("reports an unexpected winner", () => {
+    const runner = new BattleLabRunner(
+      {
+        resolveBattle: () => ({
+          ...battleResult,
+          winnerTeamId: "team-b",
+          loserTeamId: "team-a"
+        })
+      } as unknown as BattleEngine,
+      new FighterRegistry()
+    );
+
+    const result = runner.runScenario(scenario, input);
+
+    expect(result.validation.isValid).toBe(false);
+    expect(result.validation.notes).toContain(
+      'Expected winner "team-a", but Battle Engine reported "team-b".'
+    );
+  });
+
+  it("reports an unexpected event sequence", () => {
+    const runner = new BattleLabRunner(
+      {
+        resolveBattle: () => ({
+          ...battleResult,
+          events: [
+            {
+              type: "CLASH",
+              round: 1,
+              description: "The two deployed teams engaged in battle."
+            },
+            {
+              type: "COUNTER",
+              round: 1,
+              description: "A counter event occurred."
+            },
+            {
+              type: "VICTORY",
+              round: 1,
+              description: "team-a achieved victory over team-b."
+            }
+          ]
+        })
+      } as unknown as BattleEngine,
+      new FighterRegistry()
+    );
+
+    const result = runner.runScenario(scenario, input);
+
+    expect(result.validation.isValid).toBe(false);
+    expect(result.validation.notes).toContain(
+      "Expected event sequence [CLASH, ADVANTAGE, VICTORY], but Battle Engine reported [CLASH, COUNTER, VICTORY]."
+    );
   });
 
   it("records the authoritative Battle Engine events", () => {
