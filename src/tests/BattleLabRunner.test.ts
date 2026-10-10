@@ -103,6 +103,36 @@ describe("BattleLabRunner", () => {
     expect(result.validation.isValid).toBe(true);
     expect(result.eventTrace).toHaveLength(3);
   });
+  it("propagates the real Battle Engine's tied-score error", () => {
+  const registry = new FighterRegistry();
+
+  registry.register({
+    id: "fighter-a",
+    name: "Fighter A",
+    factors: battleResult.factors,
+    peakScreenState: "Peak cinematic state",
+    sources: ["Tie regression test source"],
+    feats: ["Tie regression test feat"]
+  });
+
+  registry.register({
+    id: "fighter-b",
+    name: "Fighter B",
+    factors: battleResult.factors,
+    peakScreenState: "Peak cinematic state",
+    sources: ["Tie regression test source"],
+    feats: ["Tie regression test feat"]
+  });
+
+  const runner = new BattleLabRunner(
+    new BattleEngine(),
+    registry
+  );
+
+  expect(() => runner.runScenario(scenario, input)).toThrow(
+    "Battle cannot be resolved because the deployment scores are tied."
+  );
+});
   it("integrates the real Battle Engine with the registry and validates its result", () => {
   const registry = new FighterRegistry();
 
