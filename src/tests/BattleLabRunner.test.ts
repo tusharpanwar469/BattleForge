@@ -103,6 +103,51 @@ describe("BattleLabRunner", () => {
     expect(result.validation.isValid).toBe(true);
     expect(result.eventTrace).toHaveLength(3);
   });
+  it("reports a result whose winner and loser are not participating teams", () => {
+  const runner = new BattleLabRunner(
+    {
+      resolveBattle: () => ({
+        ...battleResult,
+        winnerTeamId: "team-x",
+        loserTeamId: "team-b"
+      })
+    } as unknown as BattleEngine,
+    new FighterRegistry()
+  );
+
+  const result = runner.runScenario(scenario, input);
+
+  expect(result.validation.isValid).toBe(false);
+  expect(result.validation.notes).toContain(
+    "Battle result winner and loser must be different participating teams."
+  );
+});
+
+it("reports an event with an empty description", () => {
+  const runner = new BattleLabRunner(
+    {
+      resolveBattle: () => ({
+        ...battleResult,
+        events: [
+          {
+            type: "CLASH",
+            round: 1,
+            description: ""
+          },
+          ...battleResult.events.slice(1)
+        ]
+      })
+    } as unknown as BattleEngine,
+    new FighterRegistry()
+  );
+
+  const result = runner.runScenario(scenario, input);
+
+  expect(result.validation.isValid).toBe(false);
+  expect(result.validation.notes).toContain(
+    'Battle event "CLASH" must have a non-empty description.'
+  );
+});
   it("propagates an unregistered fighter error from the real Battle Engine", () => {
   const registry = new FighterRegistry();
 
