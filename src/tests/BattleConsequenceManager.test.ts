@@ -91,6 +91,57 @@ describe("BattleConsequenceManager", () => {
     ]);
   });
 
+    it("rejects a losing roster fighter with no matching fighter state", () => {
+    const manager = new BattleConsequenceManager();
+
+    const teamA = createTeam("team-a", ["fighter-a"]);
+    const teamB = createTeam("team-b", ["fighter-b", "fighter-c"]);
+    const fighterB = createFighter("fighter-b", "team-b");
+
+    const result = manager.applyBattleResult(
+      createBattleResult(),
+      teamA,
+      teamB,
+      [fighterB],
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toContain(
+      'Losing team "team-b" roster fighter "fighter-c" has no matching fighter state.',
+    );
+
+    expect(fighterB.isAlive).toBe(true);
+    expect(teamB.roster).toEqual(["fighter-b", "fighter-c"]);
+    expect(teamB.eliminatedFighters).toEqual([]);
+  });
+
+  it("rejects duplicate fighter states without eliminating anyone", () => {
+    const manager = new BattleConsequenceManager();
+
+    const teamA = createTeam("team-a", ["fighter-a"]);
+    const teamB = createTeam("team-b", ["fighter-b"]);
+    const fighterB1 = createFighter("fighter-b", "team-b");
+    const fighterB2 = createFighter("FIGHTER-B", "team-b");
+
+    const result = manager.applyBattleResult(
+      createBattleResult(),
+      teamA,
+      teamB,
+      [fighterB1, fighterB2],
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toContain(
+      'Losing team "team-b" roster fighter "fighter-b" has multiple matching fighter states.',
+    );
+
+    expect(fighterB1.isAlive).toBe(true);
+    expect(fighterB2.isAlive).toBe(true);
+    expect(teamB.roster).toEqual(["fighter-b"]);
+    expect(teamB.eliminatedFighters).toEqual([]);
+  });
+  });
+
   it("does not eliminate fighters from the winning team", () => {
     const manager = new BattleConsequenceManager();
 
@@ -231,6 +282,6 @@ describe("BattleConsequenceManager", () => {
     expect(teamB.roster).toEqual(["fighter-b", "fighter-c"]);
     expect(teamB.eliminatedFighters).toEqual([]);
   });
-});
+
 
 
