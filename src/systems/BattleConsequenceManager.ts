@@ -21,11 +21,13 @@ export class BattleConsequenceManager {
   ): BattleConsequenceResult {
     const errors: string[] = [];
 
+    // Validate the battle result.
     if (result.winnerTeamId === result.loserTeamId) {
-      errors.push("Battle result cannot have the same winner and loser team.");
       return {
         success: false,
-        errors
+        errors: [
+          "Battle result cannot have the same winner and loser team."
+        ]
       };
     }
 
@@ -58,12 +60,36 @@ export class BattleConsequenceManager {
       };
     }
 
+    // Collect every fighter belonging to the losing team.
     const losingFighters = fighters.filter(
-      (fighter) =>
-        fighter.teamId === loserTeam.id &&
-        fighter.isAlive
-    );
+  (fighter) =>
+    fighter.teamId === loserTeam.id ||
+    loserTeam.roster.some(
+      (id) => id.trim().toLowerCase() === fighter.id.trim().toLowerCase()
+    )
+);
 
+    // Preflight: validate all losing fighters before changing any state.
+    for (const fighter of losingFighters) {
+      const validation = this.validateFighterForElimination(
+        fighter,
+        loserTeam
+      );
+
+      if (!validation.success) {
+        errors.push(...validation.errors);
+      }
+    }
+
+    // Do not partially eliminate the team if preflight validation fails.
+    if (errors.length > 0) {
+      return {
+        success: false,
+        errors
+      };
+    }
+
+    // Apply eliminations only after every fighter passes preflight.
     for (const fighter of losingFighters) {
       const consequence = this.lifecycleManager.eliminateFighter(
         fighter,
@@ -73,6 +99,35 @@ export class BattleConsequenceManager {
       if (!consequence.success) {
         errors.push(...consequence.errors);
       }
+    }
+
+    return {
+      success: errors.length === 0,
+      errors
+    };
+  }
+
+  private validateFighterForElimination(
+    fighter: FighterState,
+    team: TeamState
+  ): { success: boolean; errors: string[] } {
+    const errors: string[] = [];
+    const normalizedId = fighter.id.trim().toLowerCase();
+
+    if (!normalizedId) {
+      errors.push("Fighter ID cannot be empty.");
+    }
+
+    if (fighter.teamId !== team.id) {
+      errors.push(
+        `Fighter "${fighter.id}" does not belong to team "${team.id}".`
+      );
+    }
+
+    if (!fighter.isAlive) {
+      errors.push(
+        `Fighter "${fighter.id}" is already eliminated.`
+      );
     }
 
     return {

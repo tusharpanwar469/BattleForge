@@ -176,6 +176,61 @@ describe("BattleConsequenceManager", () => {
       "Battle result cannot have the same winner and loser team."
     );
   });
+  it("does not eliminate any fighters when a losing fighter fails preflight validation", () => {
+    const manager = new BattleConsequenceManager();
+
+    const teamA = createTeam("team-a", ["fighter-a"]);
+    const teamB = createTeam("team-b", ["fighter-b", "fighter-c"]);
+
+    const fighterB = createFighter("fighter-b", "team-b");
+    const fighterC = createFighter(
+      "fighter-c",
+      "team-c"
+    );
+
+    const result = manager.applyBattleResult(
+      createBattleResult(),
+      teamA,
+      teamB,
+      [fighterB, fighterC]
+    );
+
+    expect(result.success).toBe(false);
+    expect(fighterB.isAlive).toBe(true);
+    expect(fighterB.isDeployed).toBe(true);
+    expect(fighterC.isAlive).toBe(true);
+    expect(teamB.roster).toEqual(["fighter-b", "fighter-c"]);
+    expect(teamB.eliminatedFighters).toEqual([]);
+  });
+
+  it("does not eliminate earlier fighters when a later losing fighter is already dead", () => {
+    const manager = new BattleConsequenceManager();
+
+    const teamA = createTeam("team-a", ["fighter-a"]);
+    const teamB = createTeam("team-b", ["fighter-b", "fighter-c"]);
+
+    const fighterB = createFighter("fighter-b", "team-b");
+    const fighterC = createFighter(
+      "fighter-c",
+      "team-b",
+      false,
+      false
+    );
+
+    const result = manager.applyBattleResult(
+      createBattleResult(),
+      teamA,
+      teamB,
+      [fighterB, fighterC]
+    );
+
+    expect(result.success).toBe(false);
+    expect(fighterB.isAlive).toBe(true);
+    expect(fighterB.isDeployed).toBe(true);
+    expect(fighterC.isAlive).toBe(false);
+    expect(teamB.roster).toEqual(["fighter-b", "fighter-c"]);
+    expect(teamB.eliminatedFighters).toEqual([]);
+  });
 });
 
 
