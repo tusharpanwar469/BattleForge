@@ -1,3 +1,4 @@
+import type { FighterState } from "../core/FighterState";
 import type { TeamState } from "../core/TeamState";
 
 export interface WarCompletionResult {
@@ -7,7 +8,8 @@ export interface WarCompletionResult {
 }
 
 export function validateWarCompletion(
-  teams: TeamState[]
+  teams: TeamState[],
+  fighters: FighterState[]
 ): WarCompletionResult {
   const errors: string[] = [];
 
@@ -38,10 +40,25 @@ export function validateWarCompletion(
     };
   }
 
-  const livingTeams = teams.filter((team) => team.roster.length > 0);
+  const livingTeamIds = new Set(
+    fighters
+      .filter(
+        (fighter) =>
+          fighter.isAlive &&
+          fighter.teamId !== null &&
+          teamIds.has(fighter.teamId)
+      )
+      .map((fighter) => fighter.teamId as string)
+  );
+
+  const livingTeams = teams.filter((team) =>
+    livingTeamIds.has(team.id)
+  );
 
   if (livingTeams.length === 0) {
-    errors.push("War cannot be completed because no team has living fighters.");
+    errors.push(
+      "War cannot be completed because no team has living fighters."
+    );
 
     return {
       isComplete: false,

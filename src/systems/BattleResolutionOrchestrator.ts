@@ -51,7 +51,7 @@ export class BattleResolutionOrchestrator {
       throw new Error(consequenceResult.errors.join(" "));
     }
 
-    const completionResult = validateWarCompletion(allTeams);
+    const completionResult = validateWarCompletion(allTeams, fighters);
 
     return {
       battleResult,
