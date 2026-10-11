@@ -17,7 +17,7 @@ export interface BattleResolutionResult {
 export class BattleResolutionOrchestrator {
   constructor(
     private readonly engine: BattleEngine,
-    private readonly consequenceManager: BattleConsequenceManager
+    private readonly consequenceManager: BattleConsequenceManager,
   ) {}
 
   resolveBattle(
@@ -28,7 +28,7 @@ export class BattleResolutionOrchestrator {
     deploymentB: BattleDeployment,
     fighters: FighterState[],
     registry: FighterRegistry,
-    allTeams: TeamState[]
+    allTeams: TeamState[],
   ): BattleResolutionResult {
     const battleResult = this.engine.resolveBattle(
       gameState,
@@ -36,16 +36,15 @@ export class BattleResolutionOrchestrator {
       deploymentA,
       teamB,
       deploymentB,
-      registry
+      registry,
     );
 
-    const consequenceResult =
-      this.consequenceManager.applyBattleResult(
-        battleResult,
-        teamA,
-        teamB,
-        fighters
-      );
+    const consequenceResult = this.consequenceManager.applyBattleResult(
+      battleResult,
+      teamA,
+      teamB,
+      fighters,
+    );
 
     if (!consequenceResult.success) {
       throw new Error(consequenceResult.errors.join(" "));
@@ -53,10 +52,14 @@ export class BattleResolutionOrchestrator {
 
     const completionResult = validateWarCompletion(allTeams, fighters);
 
+    if (completionResult.errors.length > 0) {
+      throw new Error(completionResult.errors.join(" "));
+    }
+
     return {
       battleResult,
       warComplete: completionResult.isComplete,
-      winnerTeamId: completionResult.winnerTeamId
+      winnerTeamId: completionResult.winnerTeamId,
     };
   }
 }

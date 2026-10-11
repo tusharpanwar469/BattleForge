@@ -3,7 +3,7 @@ import type { FighterState } from "../core/FighterState";
 import type { TeamState } from "../core/TeamState";
 import {
   validateWarReadiness,
-  WAR_MIN_LIVING_FIGHTERS
+  WAR_MIN_LIVING_FIGHTERS,
 } from "../systems/WarReadinessValidator";
 
 function createTeam(id: string): TeamState {
@@ -12,14 +12,14 @@ function createTeam(id: string): TeamState {
     name: id,
     budget: 220,
     roster: [],
-    eliminatedFighters: []
+    eliminatedFighters: [],
   };
 }
 
 function createFighter(
   id: string,
   teamId: string,
-  isAlive = true
+  isAlive = true,
 ): FighterState {
   return {
     id,
@@ -27,20 +27,17 @@ function createFighter(
     teamId,
     isAlive,
     isDeployed: false,
-    fatigue: 0
+    fatigue: 0,
   };
 }
 
 function createTeamFighters(
   teamId: string,
   count: number,
-  startingIndex = 0
+  startingIndex = 0,
 ): FighterState[] {
   return Array.from({ length: count }, (_, index) =>
-    createFighter(
-      `${teamId}-fighter-${startingIndex + index}`,
-      teamId
-    )
+    createFighter(`${teamId}-fighter-${startingIndex + index}`, teamId),
   );
 }
 
@@ -50,11 +47,11 @@ describe("WarReadinessValidator", () => {
       createTeam("team-a"),
       createTeam("team-b"),
       createTeam("team-c"),
-      createTeam("team-d")
+      createTeam("team-d"),
     ];
 
     const fighters = teams.flatMap((team) =>
-      createTeamFighters(team.id, WAR_MIN_LIVING_FIGHTERS)
+      createTeamFighters(team.id, WAR_MIN_LIVING_FIGHTERS),
     );
 
     const result = validateWarReadiness(teams, fighters);
@@ -63,19 +60,44 @@ describe("WarReadinessValidator", () => {
     expect(result.errors).toEqual([]);
   });
 
+  it("rejects an empty team list", () => {
+    const result = validateWarReadiness([], []);
+
+    expect(result.isReady).toBe(false);
+    expect(result.errors).toContain("War readiness requires at least 2 teams.");
+  });
+
+  it("rejects duplicate team IDs", () => {
+    const teams = [createTeam("team-a"), createTeam("team-a")];
+
+    const result = validateWarReadiness(teams, []);
+
+    expect(result.isReady).toBe(false);
+    expect(result.errors).toContain('Duplicate team id: "team-a".');
+  });
+
+  it("rejects an empty team ID", () => {
+    const teams = [createTeam(""), createTeam("team-b")];
+
+    const result = validateWarReadiness(teams, []);
+
+    expect(result.isReady).toBe(false);
+    expect(result.errors).toContain("Team ID cannot be empty.");
+  });
+
   it("rejects the war when one team has fewer than 8 living fighters", () => {
     const teams = [
       createTeam("team-a"),
       createTeam("team-b"),
       createTeam("team-c"),
-      createTeam("team-d")
+      createTeam("team-d"),
     ];
 
     const fighters = [
       ...createTeamFighters("team-a", 8),
       ...createTeamFighters("team-b", 8),
       ...createTeamFighters("team-c", 7),
-      ...createTeamFighters("team-d", 8)
+      ...createTeamFighters("team-d", 8),
     ];
 
     const result = validateWarReadiness(teams, fighters);
@@ -90,7 +112,7 @@ describe("WarReadinessValidator", () => {
       createTeam("team-a"),
       createTeam("team-b"),
       createTeam("team-c"),
-      createTeam("team-d")
+      createTeam("team-d"),
     ];
 
     const fighters = [
@@ -98,7 +120,7 @@ describe("WarReadinessValidator", () => {
       ...createTeamFighters("team-b", 8),
       ...createTeamFighters("team-c", 8),
       ...createTeamFighters("team-d", 7),
-      createFighter("team-d-dead", "team-d", false)
+      createFighter("team-d-dead", "team-d", false),
     ];
 
     const result = validateWarReadiness(teams, fighters);
@@ -113,14 +135,14 @@ describe("WarReadinessValidator", () => {
       createTeam("team-a"),
       createTeam("team-b"),
       createTeam("team-c"),
-      createTeam("team-d")
+      createTeam("team-d"),
     ];
 
     const fighters = [
       ...createTeamFighters("team-a", 7),
       ...createTeamFighters("team-b", 6),
       ...createTeamFighters("team-c", 8),
-      ...createTeamFighters("team-d", 5)
+      ...createTeamFighters("team-d", 5),
     ];
 
     const result = validateWarReadiness(teams, fighters);
@@ -134,14 +156,14 @@ describe("WarReadinessValidator", () => {
       createTeam("team-a"),
       createTeam("team-b"),
       createTeam("team-c"),
-      createTeam("team-d")
+      createTeam("team-d"),
     ];
 
     const fighters = [
       ...createTeamFighters("team-a", 8),
       ...createTeamFighters("team-b", 9),
       ...createTeamFighters("team-c", 10),
-      ...createTeamFighters("team-d", 16)
+      ...createTeamFighters("team-d", 16),
     ];
 
     const result = validateWarReadiness(teams, fighters);
