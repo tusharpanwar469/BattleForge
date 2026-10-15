@@ -31,11 +31,18 @@ export class WarProgressionManager {
     };
   }
 
-  beginNextRound(gameState: GameState): GameState {
+ beginNextRound(
+    gameState: GameState,
+    warComplete: boolean
+  ): GameState {
     if (gameState.phase !== "results") {
       throw new Error(
         `The next round can only begin from the results phase. Current phase: "${gameState.phase}".`
       );
+    }
+
+    if (warComplete) {
+      throw new Error("The war is complete; no further rounds can begin.");
     }
 
     return {

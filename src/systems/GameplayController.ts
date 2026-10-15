@@ -109,7 +109,10 @@ export class GameplayController {
       );
     }
 
-    return this.progressionManager.beginNextRound(gameState);
+  return this.progressionManager.beginNextRound(
+  gameState,
+  previousOutcome.resolution.warComplete
+);
   }
 
   getBattleResult(

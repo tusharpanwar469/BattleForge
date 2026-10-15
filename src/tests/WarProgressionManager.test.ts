@@ -54,6 +54,15 @@ describe("WarProgressionManager", () => {
     expect(nextState.isPaused).toBe(false);
   });
 
+  it("rejects starting the next round when the war is complete", () => {
+    const manager = new WarProgressionManager();
+    const gameState = createGameState("results", 1);
+
+    expect(() =>
+      manager.beginNextRound(gameState, true)
+    ).toThrow("The war is complete; no further rounds can begin.");
+  });
+
   it("rejects progression when the game is not in battle phase", () => {
     const manager = new WarProgressionManager();
     const gameState = createGameState("results", 1);
@@ -97,7 +106,7 @@ describe("WarProgressionManager", () => {
     const manager = new WarProgressionManager();
     const gameState = createGameState("results", 1);
 
-    const nextState = manager.beginNextRound(gameState);
+    const nextState = manager.beginNextRound(gameState, false);
 
     expect(nextState.phase).toBe("battle");
     expect(nextState.round).toBe(2);
@@ -109,7 +118,7 @@ describe("WarProgressionManager", () => {
     const gameState = createGameState("battle", 1);
 
     expect(() =>
-      manager.beginNextRound(gameState)
+      manager.beginNextRound(gameState, false)
     ).toThrow(
       'The next round can only begin from the results phase.'
     );
